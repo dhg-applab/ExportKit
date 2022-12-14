@@ -1,7 +1,7 @@
 import SwiftUI
 import CoreData
 
-public enum ExporterClientError: Error {
+public enum ExportKitError: Error {
     case couldNotSave(reason: String)
     case fetchError(reason: String)
     case itemNotFound
@@ -9,36 +9,16 @@ public enum ExporterClientError: Error {
     case fetchRequestNil
 }
 
-public struct ExportKitConfig {
-    let appBundleIdentifier: String
-}
-
 public class ExportKit {
     
-    public static var shared: ExportKit {
-        if let initializedShared = _shared {
-            return initializedShared
-        }
-        fatalError("ExportKit not yet initialized. Run setup(withConfig:) first")
-    }
-    private static var _shared: ExportKit?
-    var config: ExportKitConfig
+    public static var shared = ExportKit()
     public var exportStrategy: ((Item?) -> Result<Any, Error>)?
-    public var loggerCallback: ((String) -> Void)?
+    public var logHandler: ((String) -> Void)?
     public static var view: ExportView {
         ExportView(viewModel: ExportViewModel())
     }
     public static var fetchRequest: NSFetchRequest<NSFetchRequestResult> {
         NSFetchRequest<NSFetchRequestResult>(entityName: Constants.CoreData.entryName)
-    }
-    
-    // MARK: - Init
-    private init(withConfig config: ExportKitConfig) {
-        self.config = config
-    }
-    
-    class func setup(withConfig config: ExportKitConfig) {
-        _shared = ExportKit(withConfig: config)
     }
     
     // MARK: - CRUD
@@ -51,17 +31,17 @@ public class ExportKit {
     }
     
     @discardableResult
-    public func save() -> Result<Void, ExporterClientError> {
+    public func save() -> Result<Void, ExportKitError> {
         do {
             try PersistenceController.shared.container.viewContext.save()
         } catch {
-            ExportKit.shared.loggerCallback?("[ ERROR - EXPORTER ] Could not save data \(error)")
+            ExportKit.shared.logHandler?("[ ERROR - EXPORTER ] Could not save data \(error)")
             return .failure(.couldNotSave(reason: error.localizedDescription))
         }
         return .success(())
     }
     
-    public func getItem(id: UUID) -> Result<Item, ExporterClientError> {
+    public func getItem(id: UUID) -> Result<Item, ExportKitError> {
         let request = NSFetchRequest<NSFetchRequestResult>(entityName: Constants.CoreData.entryName)
         request.predicate = NSPredicate(format: "id == %@", id.uuidString)
         
@@ -78,18 +58,18 @@ public class ExportKit {
         }
     }
     
-    public func getItems(predicate: NSPredicate) -> Result<[Item], ExporterClientError> {
+    public func getItems(predicate: NSPredicate) -> Result<[Item], ExportKitError> {
         let request = NSFetchRequest<NSFetchRequestResult>(entityName: Constants.CoreData.entryName)
         request.predicate = predicate
         return getItems(fetchRequest: request)
     }
     
-    public func getAllItems() -> Result<[Item], ExporterClientError> {
+    public func getAllItems() -> Result<[Item], ExportKitError> {
         let request = NSFetchRequest<NSFetchRequestResult>(entityName: Constants.CoreData.entryName)
         return getItems(fetchRequest: request)
     }
     
-    public func getItems(fetchRequest: NSFetchRequest<NSFetchRequestResult>) -> Result<[Item], ExporterClientError> {
+    public func getItems(fetchRequest: NSFetchRequest<NSFetchRequestResult>) -> Result<[Item], ExportKitError> {
         do {
             if let data = try PersistenceController.shared.container.viewContext.fetch(fetchRequest) as? [Item] {
                 return .success(data)
@@ -97,13 +77,13 @@ public class ExportKit {
                 return .failure(.fetchRequestNil)
             }
         } catch {
-            ExportKit.shared.loggerCallback?("[ ERROR - EXPORTER ] Could not save data \(error)")
+            ExportKit.shared.logHandler?("[ ERROR - EXPORTER ] Could not save data \(error)")
             return .failure(.fetchError(reason: error.localizedDescription))
         }
     }
     
     @discardableResult
-    public func deleteItem(id: UUID) -> Result<Void, ExporterClientError> {
+    public func deleteItem(id: UUID) -> Result<Void, ExportKitError> {
         switch getItem(id: id) {
         case .success(let item):
             return deleteItem(item)
@@ -113,13 +93,13 @@ public class ExportKit {
     }
     
     @discardableResult
-    public func deleteItem(_ item: Item) -> Result<Void, ExporterClientError> {
+    public func deleteItem(_ item: Item) -> Result<Void, ExportKitError> {
         PersistenceController.shared.container.viewContext.delete(item)
         return save()
     }
     
     @discardableResult
-    public func deleteAllItems() -> Result<Void, ExporterClientError> {
+    public func deleteAllItems() -> Result<Void, ExportKitError> {
         guard case let .success(allItems) = getAllItems() else {
             return .failure(.unkownError)
         }
@@ -129,7 +109,7 @@ public class ExportKit {
     
     // To make the client feature complete
     @available(*, unavailable, message: "Just use getItem(id:), update the item and call save()")
-    public func updateItem(_ item: Item) -> Result<Void, ExporterClientError> {
+    public func updateItem(_ item: Item) -> Result<Void, ExportKitError> {
         .success(())
     }
 }

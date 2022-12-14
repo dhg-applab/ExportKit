@@ -17,7 +17,7 @@ class ExportViewModel: ObservableObject {
     func export(item: Item) {
         guard let exportStrategy = ExportKit.shared.exportStrategy else {
             alert = .descriptiveError("No export strategy")
-            ExportKit.shared.loggerCallback?("[ EXPORTER ] No export strategy")
+            ExportKit.shared.logHandler?("[ EXPORTER ] No export strategy")
             return
         }
         
