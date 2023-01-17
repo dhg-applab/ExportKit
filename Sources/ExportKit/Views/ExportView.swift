@@ -36,7 +36,7 @@ public struct ExportView: View {
         .onAppear(perform: viewModel.load)
         .alertView(type: $viewModel.alert)
         .listStyle(InsetGroupedListStyle())
-        .navigationTitle("Exporter")
+        .navigationTitle("Export")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: viewModel.load) {
