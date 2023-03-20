@@ -75,8 +75,11 @@ class ExportViewModel: ObservableObject {
 
             if let textItems = items as? [String] {
                 let textToShare = textItems.reduce("") { partialResult, item in
-                    partialResult == "" ? item : partialResult + "\n" + item
-                }
+                    if partialResult.isEmpty {
+                        return item
+                    } else {
+                        return partialResult + "\n" + item
+                    }                }
                 itemsToShare.append(textToShare)
             } else {
                 itemsToShare.append(items)
