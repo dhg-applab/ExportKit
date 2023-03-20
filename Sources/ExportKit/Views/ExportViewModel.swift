@@ -79,7 +79,8 @@ class ExportViewModel: ObservableObject {
                         return item
                     } else {
                         return partialResult + "\n" + item
-                    }                }
+                    }
+                }
                 itemsToShare.append(textToShare)
             } else {
                 itemsToShare.append(items)
