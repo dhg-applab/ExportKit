@@ -39,6 +39,11 @@ public struct ExportView: View {
         .navigationTitle("Export")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: viewModel.exportAll) {
+                    Image(systemName: "square.and.arrow.up.on.square")
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: viewModel.load) {
                     Image(systemName: "arrow.counterclockwise")
                 }
