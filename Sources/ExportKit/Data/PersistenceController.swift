@@ -23,4 +23,6 @@ final class PersistenceController {
         }
         return container
     }()
+    
+    lazy var backgroundContext = container.newBackgroundContext()
 }

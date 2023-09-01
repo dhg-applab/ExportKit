@@ -17,17 +17,26 @@ public struct ExportView: View {
                 }
             }
             
-            ForEach(viewModel.data) { item in
+            ForEach(viewModel.data, id: \.id) { item in
                 Button(action: { viewModel.export(item: item) }) {
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(item.name ?? "")
+                            Text(item.name)
                                 .foregroundColor(.primary)
-                            Text(item.id?.uuidString ?? "")
+                            Text(item.id.uuidString)
                                 .font(.system(size: 10, design: .monospaced))
                                 .foregroundColor(.gray)
                         }
                         Spacer()
+                        Text(item.type.description)
+                            .foregroundColor(.green)
+                            .padding(4)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.green, lineWidth: 1)
+                            )
+                            .padding()
+                        
                         Image(systemName: "square.and.arrow.up")
                     }
                 }
